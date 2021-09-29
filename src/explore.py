@@ -292,7 +292,7 @@ def viz_model_preds(version,
     loader = trainloader if viz_train else valloader
     nusc_maps = get_nusc_maps(map_folder)
 
-    device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
+    device = 0#torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
 
     model = compile_model(grid_conf, data_aug_conf, outC=1)
     print('loading', modelf)

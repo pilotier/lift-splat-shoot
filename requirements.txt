@@ -1,0 +1,7 @@
+opencv-python
+matplotlib
+fire
+pyquaternion
+nuscenes-devkit
+tensorboardX
+efficientnet_pytorch==0.7.0
