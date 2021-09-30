@@ -266,7 +266,7 @@ def viz_model_preds(version,
                     dbound=[4.0, 45.0, 1.0],
 
                     bsz=4,
-                    nworkers=10,
+                    nworkers=5,
                     ):
     grid_conf = {
         'xbound': xbound,

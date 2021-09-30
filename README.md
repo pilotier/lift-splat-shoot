@@ -30,8 +30,26 @@ Download nuscenes data from [https://www.nuscenes.org/](https://www.nuscenes.org
 pip install nuscenes-devkit tensorboardX efficientnet_pytorch==0.7.0
 ```
 
+#### Simple Install with Anaconda
+Simply run the following command to create the conda virtual environment.
+```
+conda env create -f conda_env.yaml
+```
+The current LST version of pyTorch is known to work, which can be installed:
+```
+pip3 install torch==1.8.2+cu111 torchvision==0.9.2+cu111 torchaudio===0.8.2 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+```
+
+#### Correcting nuScenes Data Path
+The DATAROOT folder is simply the nuscenes folder which contains different version (in our case "mini") folders.
+
+To get the map visualization working, the Map Extension pack (currently v1.3) needs to be downloaded. The maps folder should be placed in the same DATAROOT folder for nuscenes (besides "mini").
+
+Finally, the directory structure passed to the program will simply be /path/to/nuscenes .
+
+
 ### Pre-trained Model
-Download a pre-trained BEV vehicle segmentation model from here: [https://drive.google.com/file/d/18fy-6beTFTZx5SrYLs9Xk7cY-fGSm7kw/view?usp=sharing](https://drive.google.com/file/d/18fy-6beTFTZx5SrYLs9Xk7cY-fGSm7kw/view?usp=sharing)
+Download a pre-trained BEV vehicle segmentation model from here: [https://drive.google.com/file/d/18fy-6beTFTZx5SrYLs9Xk7cY-fGSm7kw/view?usp=sharing](https://drive.google.com/file/d/18fy-6beTFTZx5SrYLs9Xk7cY-fGSm7kw/view?usp=sharing) 
 
 | Vehicle IOU (reported in paper)        | Vehicle IOU (this repository)         |
 |:-------------:|:-------------:| 
