@@ -15,12 +15,18 @@ from nuscenes.utils.splits import create_splits_scenes
 from nuscenes.utils.data_classes import Box
 from glob import glob
 
-from .tools import get_lidar_data, img_transform, normalize_img, gen_dx_bx
+from .tools import get_lidar_data, img_transform, normalize_img, gen_dx_bx, get_nusc_maps, get_local_map
 
 
 class NuscData(torch.utils.data.Dataset):
-    def __init__(self, nusc, is_train, data_aug_conf, grid_conf):
+    def __init__(self, nusc, is_train, data_aug_conf, grid_conf, nusc_maps=None):
         self.nusc = nusc
+        self.nusc_maps = nusc_maps
+        self.scene2map = {}
+        for rec in nusc.scene:
+            log = nusc.get('log', rec['log_token'])
+            self.scene2map[rec['name']] = log['location']
+        
         self.is_train = is_train
         self.data_aug_conf = data_aug_conf
         self.grid_conf = grid_conf
@@ -191,6 +197,88 @@ class NuscData(torch.utils.data.Dataset):
             cv2.fillPoly(img, [pts], 1.0)
 
         return torch.Tensor(img).unsqueeze(0)
+    
+    def get_binmap(self, rec):
+        egopose = self.nusc.get('ego_pose',
+                                self.nusc.get('sample_data', rec['data']['LIDAR_TOP'])['ego_pose_token'])
+        trans = -np.array(egopose['translation'])
+        rot = Quaternion(egopose['rotation']).inverse
+        #img = np.zeros((self.nx[0], self.nx[1]))
+
+        #vehicle label
+        img_vehicle = np.zeros((self.nx[0], self.nx[1]))
+        for tok in rec['anns']:
+            inst = self.nusc.get('sample_annotation', tok)
+            # add category for lyft
+            if not inst['category_name'].split('.')[0] == 'vehicle':
+                continue
+            box = Box(inst['translation'], inst['size'], Quaternion(inst['rotation']))
+            box.translate(trans)
+            box.rotate(rot)
+            pts = box.bottom_corners()[:2].T
+            pts = np.round(
+                (pts - self.bx[:2] + self.dx[:2]/2.) / self.dx[:2]
+                ).astype(np.int32)
+            pts[:, [1, 0]] = pts[:, [0, 1]]
+            cv2.fillPoly(img_vehicle, [pts], 1.0)
+
+        # cv2.imwrite('./output/vehicle{}.png'.format(rec['timestamp']),img_vehicle*255)
+
+        #map label
+        map_name = self.scene2map[self.nusc.get('scene', rec['scene_token'])['name']]
+        rot_map = Quaternion(egopose['rotation']).rotation_matrix
+        rot_map = np.arctan2(rot_map[1, 0], rot_map[0, 0])
+        center = np.array([egopose['translation'][0], egopose['translation'][1], np.cos(rot_map), np.sin(rot_map)])
+        lmap = get_local_map(self.nusc_maps[map_name], center,50.0, ['road_segment','lane'], ['lane_divider','road_divider'])
+        #road_segment
+        img_road_segment = np.zeros((self.nx[0], self.nx[1]))
+        arr_pts=[]
+        for pts in lmap['road_segment']:
+            pts = np.round(
+                    (pts - self.bx[:2] + self.dx[:2]/2.) / self.dx[:2]
+                    ).astype(np.int32)
+            pts[:, [1, 0]] = pts[:, [0, 1]]
+            arr_pts.append(pts)
+        cv2.fillPoly(img_road_segment,arr_pts,1.0)
+        #lane
+        #lane = np.zeros((self.nx[0], self.nx[1]))
+        arr_pts=[]
+        for pts in lmap['lane']:
+            pts = np.round(
+                    (pts - self.bx[:2] + self.dx[:2]/2.) / self.dx[:2]
+                    ).astype(np.int32)
+            pts[:, [1, 0]] = pts[:, [0, 1]]
+            arr_pts.append(pts)
+        # cv2.fillPoly(lane,arr_pts,1.0)
+        cv2.fillPoly(img_road_segment,arr_pts,1.0)
+        #road_divider
+        # img_road_divider = np.zeros((self.nx[0], self.nx[1]))
+        # arr_pts=[]
+        # for pts in lmap['road_divider']:
+        #     pts = np.round(
+        #             (pts - self.bx[:2] + self.dx[:2]/2.) / self.dx[:2]
+        #             ).astype(np.int32)
+        #     pts[:, [1, 0]] = pts[:, [0, 1]]
+        #     arr_pts.append(pts)
+
+        # cv2.polylines(img_road_divider,arr_pts,False,1.0,1)
+        #lane_divider
+
+        img_lane_divider = np.zeros((self.nx[0], self.nx[1]))
+        arr_pts=[]
+        for pts in lmap['lane_divider']:
+            pts = np.round(
+                    (pts - self.bx[:2] + self.dx[:2]/2.) / self.dx[:2]
+                    ).astype(np.int32)
+            pts[:, [1, 0]] = pts[:, [0, 1]]
+            arr_pts.append(pts)
+
+        cv2.polylines(img_lane_divider,arr_pts,False,1.0,2)
+
+        # cv2.imwrite('./output/lane_divider{}.png'.format(rec['timestamp']),img_lane_divider*255)
+            #plt.plot(pts[:, 1], pts[:, 0], c=(159./255., 0.0, 1.0), alpha=0.5)
+
+        return torch.Tensor(np.stack([img_vehicle,img_road_segment,img_lane_divider]))
 
     def choose_cams(self):
         if self.is_train and self.data_aug_conf['Ncams'] < len(self.data_aug_conf['cams']):
@@ -237,23 +325,43 @@ class SegmentationData(NuscData):
         return imgs, rots, trans, intrins, post_rots, post_trans, binimg
 
 
+class MultiSegmentationData(NuscData):
+    def __init__(self, *args, **kwargs):
+        super(MultiSegmentationData, self).__init__(*args, **kwargs)
+    
+    def __getitem__(self, index):
+        rec = self.ixes[index]
+
+        cams = self.choose_cams()
+        imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(rec, cams)
+        #binimg = self.get_binimg(rec)
+        binmap = self.get_binmap(rec)
+        
+        return imgs, rots, trans, intrins, post_rots, post_trans, binmap
+
+
 def worker_rnd_init(x):
     np.random.seed(13 + x)
 
 
 def compile_data(version, dataroot, data_aug_conf, grid_conf, bsz,
-                 nworkers, parser_name):
+                 nworkers, parser_name, map_folder=''):
     nusc = NuScenes(version='v1.0-{}'.format(version),
                     dataroot=os.path.join(dataroot, version),
                     verbose=False)
+    nusc_maps = None
+    if map_folder:
+        nusc_maps = get_nusc_maps(map_folder)
+    
     parser = {
         'vizdata': VizData,
         'segmentationdata': SegmentationData,
+        'multisegmentationdata': MultiSegmentationData,
     }[parser_name]
     traindata = parser(nusc, is_train=True, data_aug_conf=data_aug_conf,
-                         grid_conf=grid_conf)
+                         grid_conf=grid_conf, nusc_maps=nusc_maps)
     valdata = parser(nusc, is_train=False, data_aug_conf=data_aug_conf,
-                       grid_conf=grid_conf)
+                       grid_conf=grid_conf, nusc_maps=nusc_maps)
 
     trainloader = torch.utils.data.DataLoader(traindata, batch_size=bsz,
                                               shuffle=True,

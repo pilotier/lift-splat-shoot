@@ -17,8 +17,8 @@ from .tools import SimpleLoss, get_batch_iou, get_val_info
 
 def train(version,
             dataroot='/data/nuscenes',
-            nepochs=10000,
-            gpuid=1,
+            nepochs=1, #10000
+            gpuid=0,
 
             H=900, W=1600,
             resize_lim=(0.193, 0.225),
@@ -36,8 +36,8 @@ def train(version,
             zbound=[-10.0, 10.0, 20.0],
             dbound=[4.0, 45.0, 1.0],
 
-            bsz=4,
-            nworkers=10,
+            bsz=1, #4
+            nworkers=5, #10
             lr=1e-3,
             weight_decay=1e-7,
             ):
@@ -106,7 +106,7 @@ def train(version,
                 writer.add_scalar('train/epoch', epoch, counter)
                 writer.add_scalar('train/step_time', t1 - t0, counter)
 
-            if counter % val_step == 0:
+            if counter % val_step == 0 and False:
                 val_info = get_val_info(model, valloader, loss_fn, device)
                 print('VAL', val_info)
                 writer.add_scalar('val/loss', val_info['loss'], counter)

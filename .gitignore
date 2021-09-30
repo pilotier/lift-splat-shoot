@@ -130,6 +130,7 @@ dmypy.json
 *.pt
 *.json
 runs/
+output/
 goodmodel.pt.bak
 *.gif
 storage/
