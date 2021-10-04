@@ -31,7 +31,7 @@ pip install nuscenes-devkit tensorboardX efficientnet_pytorch==0.7.0
 ```
 
 #### Simple Install with Anaconda
-Simply run the following command to create the conda virtual environment.
+Simply run the following command to create the conda virtual environment (tested on Windows 10).
 ```
 conda env create -f conda_env.yaml
 ```
@@ -39,6 +39,17 @@ The current LST version of pyTorch is known to work, which can be installed:
 ```
 pip3 install torch==1.8.2+cu111 torchvision==0.9.2+cu111 torchaudio===0.8.2 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
 ```
+
+#### Simple Install with Docker
+Simply run the following command to download the docker image, after installing docker on your system.
+```
+docker pull pilotier/lift-splat-shoot:latest
+```
+Then, to run the docker image, enter:
+```
+docker run -it --name NAME -v PATH/TO/NUSCENE_ROOT:/dataset:ro pilotier/lift-splat-shoot:latest
+```
+where NAME is the name of your docker image, and PATH/TO/NUSCENE_ROOT is the directory that contains the dataset (in this case the nuscenes folder, which contains 'maps' and 'mini').
 
 #### Correcting nuScenes Data Path
 The DATAROOT folder is simply the nuscenes folder which contains different version (in our case "mini") folders.
