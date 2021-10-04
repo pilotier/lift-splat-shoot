@@ -21,7 +21,7 @@ from .models import compile_model
 
 
 def lidar_check(version,
-                dataroot='/data/nuscenes',
+                dataroot='/dataset/nuscenes',
                 show_lidar=True,
                 viz_train=False,
                 nepochs=1,
@@ -119,7 +119,7 @@ def lidar_check(version,
 
 
 def cumsum_check(version,
-                dataroot='/data/nuscenes',
+                dataroot='/dataset/nuscenes',
                 gpuid=0,
 
                 H=900, W=1600,
@@ -195,7 +195,7 @@ def cumsum_check(version,
 
 def eval_model_iou(version,
                 modelf,
-                dataroot='/data/nuscenes',
+                dataroot='/dataset/nuscenes',
                 gpuid=0,
 
                 H=900, W=1600,
@@ -249,9 +249,9 @@ def eval_model_iou(version,
 
 
 def viz_model_preds(version,
-                    modelf,
-                    dataroot='/data/nuscenes',
-                    map_folder='/data/nuscenes',
+                    modelf="model525000.pt",
+                    dataroot='/dataset/nuscenes',
+                    map_folder='/dataset/nuscenes',
                     gpuid=0,
                     viz_train=False,
 
@@ -298,7 +298,10 @@ def viz_model_preds(version,
 
     model = compile_model(grid_conf, data_aug_conf, outC=1)
     print('loading', modelf)
-    model.load_state_dict(torch.load(modelf))
+    if gpuid < 0:
+        model.load_state_dict(torch.load(modelf), map_location=torch.device('cpu'))
+    else:
+        model.load_state_dict(torch.load(modelf))
     model.to(device)
 
     dx, bx, _ = gen_dx_bx(grid_conf['xbound'], grid_conf['ybound'], grid_conf['zbound'])
@@ -380,8 +383,8 @@ def viz_model_preds(version,
 
 def multi_viz_model_preds(version,
                     modelf,
-                    dataroot='/data/nuscenes',
-                    map_folder='/data/nuscenes',
+                    dataroot='/dataset/nuscenes',
+                    map_folder='/dataset/nuscenes',
                     gpuid=0,
                     viz_train=False,
 
