@@ -44,5 +44,5 @@
       
   * Connecting the jupyter notebook to the EC2 server
   
-    * Type in, ```jupyter notebook```
+    * Type in, ```jupyter notebook``` in the SSH terminal
     * ```https://(your AWS public dns):8888/```
