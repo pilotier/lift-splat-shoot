@@ -14,7 +14,7 @@
   * ```aws configure set default.s3.use_accelerate_endpoint true```
   * ```aws s3 cp s3://mininuscenes/data.zip ./data.zip --endpoint-url https://mininuscenes.s3-accelerate.amazonaws.com```
  
-* To download the entire nuscenes dataset use the following command
+* To download the entire nuscenes dataset to the EC2 storage (EBS) use the following command
 
   * ```aws s3 cp s3://nuscenes-full/sweeps.tar.gz ./data/sweeps.tar.gz --endpoint-url https://nuscenes-full.s3-accelerate.amazonaws.com```
   * ```aws s3 cp s3://nuscenes-full/samples.tar.gz ./data/samples.tar.gz --endpoint-url https://nuscenes-full.s3-accelerate.amazonaws.com```
