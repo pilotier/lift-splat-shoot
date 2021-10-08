@@ -22,6 +22,8 @@
 
 ### Setting up the Jupyter Notebook to run on the EC2 VM.
 
+**Note**: The EC2 instance must be mounted with the Security Group with SSH, HTTP, HTTPS, and Custom TCP (8888) ports before running the jupyter notebook. This can be done by navigating to the Security Groups section and adding inbound outbound rules for the above mentioned protocols.
+
   * To create a jupyter configuration file, Type in ```jupyter notebook --generate-config```.
   * A password for the notebook needs to be created which can be done using the IPython library.
   
