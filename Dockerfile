@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime
+FROM pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime
 
 RUN apt update -y
 RUN apt install gcc -y
