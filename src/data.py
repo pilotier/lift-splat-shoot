@@ -347,7 +347,7 @@ def worker_rnd_init(x):
 def compile_data(version, dataroot, data_aug_conf, grid_conf, bsz,
                  nworkers, parser_name, map_folder=''):
     nusc = NuScenes(version='v1.0-{}'.format(version),
-                    dataroot=os.path.join(dataroot, version),
+                    dataroot=dataroot, #os.path.join(dataroot, version),
                     verbose=False)
     nusc_maps = None
     if map_folder:

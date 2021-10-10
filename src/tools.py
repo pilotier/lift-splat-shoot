@@ -19,6 +19,8 @@ from nuscenes.utils.data_classes import LidarPointCloud
 from nuscenes.utils.geometry_utils import transform_matrix
 from nuscenes.map_expansion.map_api import NuScenesMap
 
+import cv2
+
 
 def get_lidar_data(nusc, sample_rec, nsweeps, min_distance):
     """
@@ -312,7 +314,7 @@ def plot_nusc_map(rec, nusc_maps, nusc, scene2map, dx, bx):
     for name in poly_names:
         for la in lmap[name]:
             pts = (la - bx) / dx
-            plt.fill(pts[:, 1], pts[:, 0], c=(1.00, 1.00, 0.00), alpha=1)
+            plt.fill(pts[:, 1], pts[:, 0], c=(1.00, 1.00, 0.00), alpha=0.3)
     #for la in lmap['road_divider']:
     #    pts = (la - bx) / dx
     #    plt.plot(pts[:, 1], pts[:, 0], c=(0.0, 0.0, 1.0), alpha=0.5)
@@ -372,3 +374,28 @@ def get_local_map(nmap, center, stretch, layer_names, line_names):
             polys[layer_name][rowi] = np.dot(polys[layer_name][rowi], rot)
 
     return polys
+
+
+def generate_video_from_imgs(path, type=".png"):
+    folder = os.path.join(os.getcwd(),path)
+    print(folder)
+    imgs = [file for file in os.listdir(folder) if file.endswith(type)]
+    #imgs = [int(x.split('.')[0]) for x in imgs]
+    #imgs.sort()
+    #imgs = [str(i)+type for i in imgs]
+
+    print(imgs)
+    orig = cv2.imread(os.path.join(folder, imgs[0]))
+    height, width, layers = orig.shape
+    size = (width,height)
+
+    fourcc = cv2.VideoWriter_fourcc(*'X264')
+    out = cv2.VideoWriter(os.path.join(folder, 'video.mp4'),fourcc, 5, size)
+
+    for i in imgs:
+        img = cv2.imread(os.path.join(folder, i))
+        if img is None:
+            break
+        out.write(img)
+    
+    out.release()

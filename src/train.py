@@ -127,7 +127,7 @@ def multi_train(version,
             modelf=None,
             dataroot='/data/nuscenes',
             map_folder='/dataset/nuscenes',
-            nepochs=50, #10000
+            nepochs=1, #10000
             gpuid=0,
 
             H=900, W=1600,
@@ -150,6 +150,8 @@ def multi_train(version,
             nworkers=0, #10
             lr=1e-3,
             weight_decay=1e-7,
+
+            output_folder=None,
             ):
     grid_conf = {
         'xbound': xbound,
@@ -181,7 +183,10 @@ def multi_train(version,
 
     opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    loss_fn = SimpleLoss(pos_weight).cuda(gpuid)
+    if gpuid < 0:
+        loss_fn = SimpleLoss(pos_weight).cpu()
+    else:
+        loss_fn = SimpleLoss(pos_weight).cuda(gpuid)
 
     writer = SummaryWriter(logdir=logdir)
     val_step = 1000 if version == 'mini' else 10000
@@ -224,9 +229,14 @@ def multi_train(version,
                 writer.add_scalar('val/loss', val_info['loss'], counter)
                 writer.add_scalar('val/iou', val_info['iou'], counter)
 
-            if counter % val_step == 0:
+            if counter % val_step == 0 or counter > 20:
                 model.eval()
                 mname = os.path.join(logdir, "model{}.pt".format(counter))
+                if output_folder is not None:
+                    mname = os.path.join(output_folder, "model{}.pt".format(counter))
+                    torch.save(model.state_dict(), mname)
+                    mname = os.path.join("./outputs", "model{}.pt".format(counter))
                 print('saving', mname)
                 torch.save(model.state_dict(), mname)
                 model.train()
+                break
