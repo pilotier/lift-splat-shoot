@@ -286,7 +286,7 @@ def viz_model_preds(version,
                     'rand_flip': rand_flip,
                     'bot_pct_lim': bot_pct_lim,
                     'cams': cams,
-                    'Ncams': 5,
+                    'Ncams': 6,
                 }
     trainloader, valloader = compile_data(version, dataroot, data_aug_conf=data_aug_conf,
                                           grid_conf=grid_conf, bsz=bsz, nworkers=nworkers,
@@ -344,20 +344,16 @@ def viz_model_preds(version,
                     plt.axis('off')
                     plt.annotate(cams[imgi].replace('_', ' '), (0.01, 0.92), xycoords='axes fraction')
 
-                ax = plt.subplot(gs[0, 0:2])
+                ax = plt.subplot(gs[0, :])
                 ax.get_xaxis().set_ticks([])
                 ax.get_yaxis().set_ticks([])
-                ax.add_patch(mpatches.Rectangle((0, 0), out.shape[3], out.shape[3], facecolor='k'))
-
-                plt.setp(ax.spines.values(), color='b', linewidth=0)
+                plt.setp(ax.spines.values(), color='b', linewidth=2)
                 plt.legend(handles=[
-                    mpatches.Patch(color=(0.0, 0.0, 1.0, 1.0), label='Output Map Segmentation'),
+                    mpatches.Patch(color=(0.0, 0.0, 1.0, 1.0), label='Output Vehicle Segmentation'),
                     mpatches.Patch(color='#76b900', label='Ego Vehicle'),
-                    mpatches.Patch(color=(1.00, 1.00, 0, 1.0), label='Groundtruth Map')
-                ], loc=(0.01, 0.86), labelcolor='w')
-                #plt.imshow(out[si].squeeze(0), vmin=0, vmax=1, cmap='Blues')
-                
-                #save_image(binimgs[si]*255, 'img1.png')
+                    mpatches.Patch(color=(1.00, 0.50, 0.31, 0.8), label='Map (for visualization purposes only)')
+                ], loc=(0.01, 0.86))
+                plt.imshow(out[si].squeeze(0), vmin=0, vmax=1, cmap='Blues')
 
                 # plot static map (improves visualization)
                 rec = loader.dataset.ixes[counter]
@@ -366,21 +362,13 @@ def viz_model_preds(version,
                 plt.ylim((0, out.shape[3]))
                 add_ego(bx, dx)
 
-                ax = plt.subplot(gs[0, 2])
-                ax.get_xaxis().set_ticks([])
-                ax.get_yaxis().set_ticks([])
-                plt.setp(ax.spines.values(), color='b', linewidth=0)
-                plt.imshow(binimgs[si].squeeze(0), vmin=0, vmax=1, cmap='Blues')
-                plt.xlim((out.shape[3], 0))
-                plt.ylim((0, out.shape[3]))
-                add_ego(bx, dx)
 
                 imname = f'eval{batchi:06}_{si:03}.jpg'
                 print('saving', imname)
                 plt.savefig("output/"+imname)
                 counter += 1
 
-
+# img_vehicle, img_road_segment, img_lane_divider
 def multi_viz_model_preds(version,
                     modelf,
                     dataroot='/dataset/nuscenes',
@@ -429,7 +417,7 @@ def multi_viz_model_preds(version,
 
     device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
 
-    model = compile_model(grid_conf, data_aug_conf, outC=1)
+    model = compile_model(grid_conf, data_aug_conf, outC=3)
     print('loading', modelf)
     model.load_state_dict(torch.load(modelf))
     model.to(device)
@@ -497,7 +485,7 @@ def multi_viz_model_preds(version,
                 ax.get_xaxis().set_ticks([])
                 ax.get_yaxis().set_ticks([])
                 plt.setp(ax.spines.values(), color='b', linewidth=0)
-                plt.imshow(binmaps[si,1], vmin=0, vmax=1, cmap='Blues')
+                plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
                 plt.xlim((out.shape[3], 0))
                 plt.ylim((0, out.shape[3]))
                 add_ego(bx, dx)

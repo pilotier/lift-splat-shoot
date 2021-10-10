@@ -129,7 +129,7 @@ dmypy.json
 *.png
 *.pt
 *.json
-runs/
+runs*/
 output/
 goodmodel.pt.bak
 *.gif
@@ -138,3 +138,6 @@ imagenet_pretrained/
 *.csv
 dataset
 *.zip
+
+#
+.*
