@@ -465,7 +465,7 @@ def multi_viz_model_preds(version,
                 ax = plt.subplot(gs[0, 0:2])
                 ax.get_xaxis().set_ticks([])
                 ax.get_yaxis().set_ticks([])
-                
+
                 # Makes the background black
                 #ax.add_patch(mpatches.Rectangle((0, 0), out.shape[3], out.shape[3], facecolor='k'))
 
@@ -476,7 +476,9 @@ def multi_viz_model_preds(version,
                     mpatches.Patch(color=(1.00, 1.00, 0, 1.0), label='Groundtruth Map')
                 ], loc=(0.01, 0.86), labelcolor='w')
                 
-                plt.imshow(binmaps[si,0], vmin=0, vmax=1, cmap='Reds')
+                # TO ADD TO THE LEFT SIDE ALSO
+                #plt.imshow(binmaps[si,0], vmin=0, vmax=1, cmap='Reds')
+                plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
 
                 # plot static map (improves visualization)
                 rec = loader.dataset.ixes[counter]
@@ -489,9 +491,9 @@ def multi_viz_model_preds(version,
                 ax.get_xaxis().set_ticks([])
                 ax.get_yaxis().set_ticks([])
                 plt.setp(ax.spines.values(), color='b', linewidth=0)
-                #plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
+                plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
                 ##plt.imshow(out[si,2], vmin=0, vmax=1, cmap='Greens', alpha=0.4)
-                plt.imshow(out[si,0], vmin=0, vmax=1, cmap='Reds')
+                #plt.imshow(out[si,0], vmin=0, vmax=1, cmap='Reds')
                 #plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
                 plt.xlim((out.shape[3], 0))
                 plt.ylim((0, out.shape[3]))

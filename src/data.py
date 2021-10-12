@@ -77,6 +77,9 @@ class NuscData(torch.utils.data.Dataset):
 
     
     def get_scenes(self):
+        if self.nusc.version == 'test':
+            return create_splits_scenes()['test']
+
         # filter by scene split
         split = {
             'v1.0-trainval': {True: 'train', False: 'val'},
