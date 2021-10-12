@@ -368,7 +368,7 @@ def viz_model_preds(version,
                 plt.savefig("output/"+imname)
                 counter += 1
 
-# img_vehicle, img_road_segment, img_lane_divider
+# 0 = img_vehicle, 1 = img_road_segment, 2 = img_lane_divider
 def multi_viz_model_preds(version,
                     modelf,
                     dataroot='/dataset/nuscenes',
@@ -474,7 +474,7 @@ def multi_viz_model_preds(version,
                     mpatches.Patch(color=(0.0, 0.0, 1.0, 1.0), label='Output Map Segmentation'),
                     mpatches.Patch(color='#76b900', label='Ego Vehicle'),
                     mpatches.Patch(color=(1.00, 1.00, 0, 1.0), label='Groundtruth Map')
-                ], loc=(0.01, 0.86), labelcolor='w')
+                ], loc=(0.01, 0.86), labelcolor='k')
                 
                 # TO ADD TO THE LEFT SIDE ALSO
                 #plt.imshow(binmaps[si,0], vmin=0, vmax=1, cmap='Reds')
