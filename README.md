@@ -56,7 +56,26 @@ The DATAROOT folder is simply the nuscenes folder which contains different versi
 
 To get the map visualization working, the Map Extension pack (currently v1.3) needs to be downloaded. The maps folder should be placed in the same DATAROOT folder for nuscenes (besides "mini").
 
-Finally, the directory structure passed to the program will simply be /path/to/nuscenes .
+The overall structure of the directory will look as follows:
+
+-> nuscenes (_or whatever name you call it_)\
+&nbsp;&nbsp;&nbsp;&nbsp;|__ mini\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ samples\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ sweeps\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ maps (_has 4 images_)\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ v1.0-mini\
+&nbsp;&nbsp;&nbsp;&nbsp;|__ trainval\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ ...\
+&nbsp;&nbsp;&nbsp;&nbsp;|__ test\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ ...\
+&nbsp;&nbsp;&nbsp;&nbsp;|__ maps (_from map extentions v1.3_)\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ basemap\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ expansion\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ prediction\
+&nbsp;
+
+
+Finally, the directory structure passed to the program will simply be _/path/to/nuscenes_, for both DATAROOT and MAP_FOLDER.
 
 
 ### Pre-trained Model
