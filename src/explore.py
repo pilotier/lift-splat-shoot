@@ -13,10 +13,12 @@ import matplotlib.patches as mpatches
 
 from torchvision.utils import save_image
 
+import os
+
 from .data import compile_data
 from .tools import (ego_to_cam, get_only_in_img_mask, denormalize_img,
                     SimpleLoss, get_val_info, add_ego, gen_dx_bx,
-                    get_nusc_maps, plot_nusc_map)
+                    get_nusc_maps, plot_nusc_map, generate_video_from_imgs)
 from .models import compile_model
 
 
@@ -375,6 +377,9 @@ def multi_viz_model_preds(version,
                     map_folder='/dataset/nuscenes',
                     gpuid=0,
                     viz_train=False,
+                    video_output=False,
+                    max_frames=-1,
+                    channel=1,
 
                     H=900, W=1600,
                     resize_lim=(0.193, 0.225),
@@ -437,6 +442,11 @@ def multi_viz_model_preds(version,
     gs = mpl.gridspec.GridSpec(3, 3, height_ratios=(1.5*fW, fH, fH))
     gs.update(wspace=0.0, hspace=0.0, left=0.0, right=1.0, top=1.0, bottom=0.0)
 
+    try:
+        os.mkdir('./output')
+    except OSError as error:
+        pass
+
     model.eval()
     counter = 0
     with torch.no_grad():
@@ -477,8 +487,8 @@ def multi_viz_model_preds(version,
                 ], loc=(0.01, 0.86), labelcolor='k')
                 
                 # TO ADD TO THE LEFT SIDE ALSO
-                #plt.imshow(binmaps[si,0], vmin=0, vmax=1, cmap='Reds')
-                plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
+                plt.imshow(binmaps[si,channel], vmin=0, vmax=1, cmap='Blues')
+                #plt.imshow(out[si,channel], vmin=0, vmax=1, cmap='Blues')
 
                 # plot static map (improves visualization)
                 rec = loader.dataset.ixes[counter]
@@ -491,7 +501,7 @@ def multi_viz_model_preds(version,
                 ax.get_xaxis().set_ticks([])
                 ax.get_yaxis().set_ticks([])
                 plt.setp(ax.spines.values(), color='b', linewidth=0)
-                plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
+                plt.imshow(out[si,channel], vmin=0, vmax=1, cmap='Blues')
                 ##plt.imshow(out[si,2], vmin=0, vmax=1, cmap='Greens', alpha=0.4)
                 #plt.imshow(out[si,0], vmin=0, vmax=1, cmap='Reds')
                 #plt.imshow(out[si,1], vmin=0, vmax=1, cmap='Blues')
@@ -503,4 +513,10 @@ def multi_viz_model_preds(version,
                 print('saving', imname)
                 plt.savefig("output/"+imname)
                 counter += 1
+
+            if (counter > max_frames and max_frames > 0):
+                break
+    
+    if video_output:
+        generate_video_from_imgs('output', '.jpg')
 
