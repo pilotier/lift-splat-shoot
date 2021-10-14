@@ -1,0 +1,3 @@
+[submodule "lss-config"]
+	path = lss-config
+	url = https://github.com/pilotier/lss-config
