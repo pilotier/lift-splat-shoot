@@ -111,6 +111,6 @@ Understanding the parameters:\
 Train a model. Monitor with tensorboard.
 
 ```
-python main.py train trainval --dataroot=NUSCENES_ROOT --logdir=./runs --gpuid=0
+python main.py multi_train trainval --dataroot=NUSCENES_ROOT --map_folder=NUSCENES_MAP_ROOT --logdir=./runs --gpuid=0
 tensorboard --logdir=./runs --bind_all
 ```
