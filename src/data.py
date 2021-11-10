@@ -356,41 +356,44 @@ class SimData(torch.utils.data.Dataset):
         dx, bx, nx = gen_dx_bx(grid_conf['xbound'], grid_conf['ybound'], grid_conf['zbound'])
         self.dx, self.bx, self.nx = dx.numpy(), bx.numpy(), nx.numpy()
 
-        self.cam_id = {'CAM_FRONT_LEFT':0, 'CAM_FRONT':1, 'CAM_FRONT_RIGHT':2,
-            'CAM_BACK_LEFT':3, 'CAM_BACK':4, 'CAM_BACK_RIGHT':5}
+        self.cam_id = {'CAM_FRONT_LEFT':5, 'CAM_FRONT':0, 'CAM_FRONT_RIGHT':1,
+            'CAM_BACK_LEFT':4, 'CAM_BACK':3, 'CAM_BACK_RIGHT':2}
         
-        self.rots = [[[ 0.8225,  0.0065,  0.5687],
-                    [-0.5687,  0.0164,  0.8224],
-                    [-0.0040, -0.9998,  0.0172]],
+        self.cam_index = {'CAM_FRONT_LEFT':0, 'CAM_FRONT':1, 'CAM_FRONT_RIGHT':2,
+            'CAM_BACK_LEFT':5, 'CAM_BACK':4, 'CAM_BACK_RIGHT':3}
+        
+        self.rots = torch.tensor([[[ 0.8225,  0.0065,  0.5687],
+                        [-0.5687,  0.0164,  0.8224],
+                        [-0.0040, -0.9998,  0.0172]],
 
-                    [[ 0.0103,  0.0084,  0.9999],
-                    [-0.9999,  0.0123,  0.0102],
-                    [-0.0122, -0.9999,  0.0086]],
+                        [[ 0.0103,  0.0084,  0.9999],
+                        [-0.9999,  0.0123,  0.0102],
+                        [-0.0122, -0.9999,  0.0086]],
 
-                    [[-0.8440,  0.0165,  0.5361],
-                    [-0.5361,  0.0036, -0.8441],
-                    [-0.0158, -0.9999,  0.0058]],
+                        [[-0.8440,  0.0165,  0.5361],
+                        [-0.5361,  0.0036, -0.8441],
+                        [-0.0158, -0.9999,  0.0058]],
 
-                    [[ 0.9479, -0.0089, -0.3185],
-                    [ 0.3186,  0.0188,  0.9477],
-                    [-0.0025, -0.9998,  0.0207]],
+                        [[ 0.9479, -0.0089, -0.3185],
+                        [ 0.3186,  0.0188,  0.9477],
+                        [-0.0025, -0.9998,  0.0207]],
 
-                    [[ 0.0092, -0.0068, -0.9999],
-                    [ 0.9999,  0.0113,  0.0091],
-                    [ 0.0112, -0.9999,  0.0069]],
+                        [[ 0.0092, -0.0068, -0.9999],
+                        [ 0.9999,  0.0113,  0.0091],
+                        [ 0.0112, -0.9999,  0.0069]],
 
-                    [[-0.9237, -0.0026, -0.3830],
-                    [ 0.3830, -0.0114, -0.9237],
-                    [-0.0020, -0.9999,  0.0116]]]
+                        [[-0.9237, -0.0026, -0.3830],
+                        [ 0.3830, -0.0114, -0.9237],
+                        [-0.0020, -0.9999,  0.0116]]])
 
-        self.trans = [[ 1.5753,  0.5005,  1.5070],
+        self.trans = torch.tensor([[ 1.5753,  0.5005,  1.5070],
                         [ 1.7220,  0.0048,  1.4949],
                         [ 1.5808, -0.4991,  1.5175],
                         [ 1.0485,  0.4831,  1.5621],
                         [ 0.0552,  0.0108,  1.5679],
-                        [ 1.0595, -0.4672,  1.5505]]
+                        [ 1.0595, -0.4672,  1.5505]])
         
-        self.intrins = [[[1.2579e+03, 0.0000e+00, 8.2724e+02],
+        self.intrins = torch.tensor([[[1.2579e+03, 0.0000e+00, 8.2724e+02],
                         [0.0000e+00, 1.2579e+03, 4.5092e+02],
                         [0.0000e+00, 0.0000e+00, 1.0000e+00]],
 
@@ -412,7 +415,7 @@ class SimData(torch.utils.data.Dataset):
 
                         [[1.2500e+03, 0.0000e+00, 8.2538e+02],
                         [0.0000e+00, 1.2500e+03, 4.6255e+02],
-                        [0.0000e+00, 0.0000e+00, 1.0000e+00]]]
+                        [0.0000e+00, 0.0000e+00, 1.0000e+00]]])
         
         self.post_rots = [[[1., 0., 0.],
                             [0., 1., 0.],
@@ -511,9 +514,9 @@ class SimData(torch.utils.data.Dataset):
             post_rot[:2, :2] = post_rot2
 
             imgs.append(normalize_img(img))
-            intrins.append(torch.tensor(self.intrins[self.cam_id[cam]]))
-            rots.append(torch.tensor(self.rots[self.cam_id[cam]]))
-            trans.append(torch.tensor(self.trans[self.cam_id[cam]]))
+            intrins.append(self.intrins[self.cam_index[cam]])
+            rots.append(self.rots[self.cam_index[cam]])
+            trans.append(self.trans[self.cam_index[cam]])
             post_rots.append(post_rot)
             post_trans.append(post_tran)
 
@@ -530,12 +533,21 @@ class SimData(torch.utils.data.Dataset):
     
     def get_binmap(self, id):
         
+        imgname = os.path.join(self.folder, 'BEV/BEV_000040.jpeg')
+        img = Image.open(imgname)
+
+        
+        newsize = (self.nx[0], self.nx[1])
+        img = img.resize(newsize)
+        img = np.array(img)
 
         #vehicle label
         img_vehicle = np.zeros((self.nx[0], self.nx[1]))
+        img_vehicle = (img[:,:,0] > 200) * (img[:,:,1] > 200) * (img[:,:,2] < 200) 
         
         #road_segment
         img_road_segment = np.zeros((self.nx[0], self.nx[1]))
+        img_road_segment = (img[:,:,0] > 200)
 
         #lane divider
         img_lane_divider = np.zeros((self.nx[0], self.nx[1]))
