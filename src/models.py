@@ -170,6 +170,7 @@ class LiftSplatShoot(nn.Module):
         """
         B, N, _ = trans.shape
 
+        #points = self.frustum
         # undo post-transformation
         # B x N x D x H x W x 3
         points = self.frustum - post_trans.view(B, N, 1, 1, 1, 3)
