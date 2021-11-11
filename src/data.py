@@ -485,10 +485,11 @@ class SimData(torch.utils.data.Dataset):
         intrins = []
         post_rots = []
         post_trans = []
+        print(id)
         for cam in cams:
             i = str(self.cam_id[cam]+1)
-            imgname = os.path.join(self.folder, i+'/CAM'+i+'_000040.jpeg')
-            img = Image.open(imgname)
+            imgname = os.path.join(self.folder, i+'/CAM'+i+'_{:06d}.png'.format(id))
+            img = Image.open(imgname).convert('RGB')
             post_rot = torch.eye(2)
             post_tran = torch.zeros(2)
 
@@ -526,15 +527,15 @@ class SimData(torch.utils.data.Dataset):
         #print(trans)
         #print(post_rots)
         #print(post_trans)
-
         return (torch.stack(imgs), torch.stack(rots), torch.stack(trans),
                 torch.stack(intrins), torch.stack(post_rots), torch.stack(post_trans))
 
     
     def get_binmap(self, id):
         
-        imgname = os.path.join(self.folder, 'BEV/BEV_000040.jpeg')
+        imgname = os.path.join(self.folder, 'BEV/BEV_{:06d}.png'.format(id))
         img = Image.open(imgname)
+        img = img.rotate(180)
 
         
         newsize = (self.nx[0], self.nx[1])
@@ -585,7 +586,7 @@ class SimSegmentationData(SimData): #torch.utils.data.Dataset
 
 
 def compile_sim_data(version, dataroot, data_aug_conf, grid_conf, bsz,
-                 nworkers, map_folder=''):
+                 nworkers, map_folder='', length=1):
     folder = dataroot
 
     maps = None
@@ -593,9 +594,9 @@ def compile_sim_data(version, dataroot, data_aug_conf, grid_conf, bsz,
         maps = map_folder
     
     traindata = SimSegmentationData(folder, is_train=True, data_aug_conf=data_aug_conf,
-                         grid_conf=grid_conf)
+                         grid_conf=grid_conf, length=length)
     valdata = SimSegmentationData(folder, is_train=False, data_aug_conf=data_aug_conf,
-                       grid_conf=grid_conf)
+                       grid_conf=grid_conf, length=length)
 
     trainloader = torch.utils.data.DataLoader(traindata, batch_size=bsz,
                                               shuffle=True,
