@@ -247,7 +247,7 @@ def sim_train(version,
             modelf=None,
             dataroot='/data/nuscenes',
             map_folder='/dataset/nuscenes',
-            nepochs=10, #10000
+            nepochs=20, #10000
             gpuid=0,
 
             H=900, W=1600,
@@ -308,7 +308,7 @@ def sim_train(version,
         loss_fn = SimpleLoss(pos_weight).cuda(gpuid)
 
     writer = SummaryWriter(logdir=logdir)
-    val_step = 1000 if version == 'mini' else 10000
+    val_step = 100 if version == 'mini' else 10000
 
     model.train()
     counter = 0

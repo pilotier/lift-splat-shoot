@@ -573,7 +573,6 @@ class SimData(torch.utils.data.Dataset):
     def get_binmap(self, rec):
         
         imgname = rec['data']['BEV']
-        # print(imgname)
         img = Image.open(imgname)
         img = img.rotate(180)
 
@@ -584,17 +583,18 @@ class SimData(torch.utils.data.Dataset):
 
         #vehicle label
         img_vehicle = np.zeros((self.nx[0], self.nx[1]))
-        img_vehicle = (img[:,:,0] < 200) * (img[:,:,1] > 200) * (img[:,:,2] < 200) 
+        img_vehicle = img[:,:,1] > 200
         
         #road_segment
         img_road_segment = np.zeros((self.nx[0], self.nx[1]))
-        img_road_segment = (img[:,:,0] > 200)
+        img_road_segment = img[:,:,0] > 200
 
         #pedestrians
         img_lane_divider = np.zeros((self.nx[0], self.nx[1]))
-        img_road_segment = (img[:,:,2] > 200)
+        img_lane_divider = img[:,:,2] > 200
 
         return torch.Tensor(np.stack([img_vehicle,img_road_segment,img_lane_divider]))
+
 
     def choose_cams(self):
         if self.is_train and self.data_aug_conf['Ncams'] < len(self.data_aug_conf['cams']):
