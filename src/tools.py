@@ -376,26 +376,50 @@ def get_local_map(nmap, center, stretch, layer_names, line_names):
     return polys
 
 
-def generate_video_from_imgs(path, type=".png"):
-    folder = os.path.join(os.getcwd(),path)
-    print(folder)
-    imgs = [file for file in os.listdir(folder) if file.endswith(type)]
-    #imgs = [int(x.split('.')[0]) for x in imgs]
-    #imgs.sort()
-    #imgs = [str(i)+type for i in imgs]
+def generate_video_from_imgs(path, type=".jpg"):
+    imgs = []
+    for i in range(311):
+        name = "eval000" + "%03d" % i + "_000.jpg"
+        img_name = path + name
+        imgs.append(img_name)
 
-    print(imgs)
-    orig = cv2.imread(os.path.join(folder, imgs[0]))
+    # print(imgs)
+
+    orig = cv2.imread(imgs[0])
     height, width, layers = orig.shape
     size = (width,height)
 
-    fourcc = cv2.VideoWriter_fourcc(*'X264')
-    out = cv2.VideoWriter(os.path.join(folder, 'video.mp4'),fourcc, 8, size)
 
-    for i in imgs:
-        img = cv2.imread(os.path.join(folder, i))
-        if img is None:
+    out = cv2.VideoWriter('lss_road.avi',cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+
+    # img_array = []
+    for filename in imgs:
+        print(filename)
+        if filename is None:
             break
+        img = cv2.imread(filename)
         out.write(img)
-    
+
     out.release()
+    # folder = os.path.join(os.getcwd(),path)
+    # print(folder)
+    # imgs = [file for file in os.listdir(folder) if file.endswith(type)]
+    # #imgs = [int(x.split('.')[0]) for x in imgs]
+    # #imgs.sort()
+    # #imgs = [str(i)+type for i in imgs]
+
+    # print(imgs)
+    # orig = cv2.imread(os.path.join(folder, imgs[0]))
+    # height, width, layers = orig.shape
+    # size = (width,height)
+
+    # fourcc = cv2.VideoWriter_fourcc(*'X264')
+    # out = cv2.VideoWriter(os.path.join(folder, 'video.avi'),fourcc, 8, size)
+
+    # for i in imgs:
+    #     img = cv2.imread(os.path.join(folder, i))
+    #     if img is None:
+    #         break
+    #     out.write(img)
+    
+    # out.release()

@@ -344,14 +344,16 @@ class MultiSegmentationData(NuscData):
 
 
 class SimData(torch.utils.data.Dataset):
-    def __init__(self, folder, is_train, data_aug_conf, grid_conf, nusc_maps=None, length=1):
+    def __init__(self, folder, is_train, data_aug_conf, grid_conf, nusc_maps=None):
         self.folder = folder
         
         self.is_train = is_train
         self.data_aug_conf = data_aug_conf
         self.grid_conf = grid_conf
 
-        self.length = length
+        
+        self.ixes = self.prepro()
+        self.length = len(self.ixes)
 
         dx, bx, nx = gen_dx_bx(grid_conf['xbound'], grid_conf['ybound'], grid_conf['zbound'])
         self.dx, self.bx, self.nx = dx.numpy(), bx.numpy(), nx.numpy()
@@ -451,6 +453,41 @@ class SimData(torch.utils.data.Dataset):
 
         print(self)
 
+    def prepro(self):
+        # print("In prepro")
+        cameras = {}
+        for cam in range(1,7):
+            # print(cam)
+            path = "/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM/" + str(cam) + "/*.jpeg"
+            files = glob(path)
+            cameras[cam] = files
+        bev_files = glob("/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM/BEV/*.jpeg")
+        cameras['BEV'] = bev_files
+
+        cam_index = {
+            6 : 'CAM_FRONT_LEFT',
+            1 : 'CAM_FRONT',
+            2 : 'CAM_FRONT_RIGHT',
+            5 : 'CAM_BACK_LEFT',
+            4 : 'CAM_BACK',
+            3 : 'CAM_BACK_RIGHT'    
+        }
+
+        ls = []
+        for i in range(311):
+            dct = {}
+            dct['Frame'] = i
+            data = {}
+            for cam in cam_index:
+                frame = "CAM"+str(cam)+"_000" + "%03d" % i
+                data[cam_index[cam]] = [i for i in cameras[cam] if frame in i][0]
+            bev_frame = "BEV_000" + "%03d" % i
+            data['BEV'] = [i for i in cameras['BEV'] if bev_frame in i][0]
+            dct['data'] = data
+            ls.append(dct)
+            # print(ls)
+
+        return ls
 
     def sample_augmentation(self):
         H, W = self.data_aug_conf['H'], self.data_aug_conf['W']
@@ -478,16 +515,19 @@ class SimData(torch.utils.data.Dataset):
         return resize, resize_dims, crop, flip, rotate
 
 
-    def get_image_data(self, id, cams):
+    def get_image_data(self, rec, cams):
         imgs = []
         rots = []
         trans = []
         intrins = []
         post_rots = []
         post_trans = []
+        print(rec)
         for cam in cams:
-            i = str(self.cam_id[cam]+1)
-            imgname = os.path.join(self.folder, i+'/CAM'+i+'_000040.jpeg')
+            # i = str(self.cam_id[cam]+1)
+            # imgname = os.path.join(self.folder, i+'/CAM'+i+'_000040.jpeg')
+            imgname = rec['data'][cam]
+            print(imgname)
             img = Image.open(imgname)
             post_rot = torch.eye(2)
             post_tran = torch.zeros(2)
@@ -531,9 +571,10 @@ class SimData(torch.utils.data.Dataset):
                 torch.stack(intrins), torch.stack(post_rots), torch.stack(post_trans))
 
     
-    def get_binmap(self, id):
+    def get_binmap(self, rec):
         
-        imgname = os.path.join(self.folder, 'BEV/BEV_000040.jpeg')
+        imgname = rec['data']['BEV']
+        # print(imgname)
         img = Image.open(imgname)
 
         
@@ -576,10 +617,11 @@ class SimSegmentationData(SimData): #torch.utils.data.Dataset
 
 
     def __getitem__(self, index):
+        rec = self.ixes[index]
         cams = self.choose_cams()
-        imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(index, cams)
+        imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(rec, cams)
         #binimg = self.get_binimg(rec)
-        binmap = self.get_binmap(index)
+        binmap = self.get_binmap(rec)
         
         return imgs, rots, trans, intrins, post_rots, post_trans, binmap
 
@@ -605,6 +647,7 @@ def compile_sim_data(version, dataroot, data_aug_conf, grid_conf, bsz,
     valloader = torch.utils.data.DataLoader(valdata, batch_size=bsz,
                                             shuffle=False,
                                             num_workers=nworkers)
+    # print(trainloader,valloader)
 
     return trainloader, valloader
 
@@ -643,7 +686,7 @@ def compile_data(version, dataroot, data_aug_conf, grid_conf, bsz,
 
     return trainloader, valloader
 
-
+'''
 
 if __name__=='__main__':
     dataroot='D:/dataset/nuscenes'
@@ -698,3 +741,4 @@ if __name__=='__main__':
     print(intrins)
     print(post_rots)
     print(post_trans)
+'''
