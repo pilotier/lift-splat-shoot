@@ -567,7 +567,7 @@ def sim_model_preds(version,
                     'Ncams': 6,
                 }
     trainloader, valloader = compile_sim_data(version, dataroot, data_aug_conf=data_aug_conf,
-                                          grid_conf=grid_conf, bsz=bsz, nworkers=nworkers)
+                                          grid_conf=grid_conf, bsz=bsz, nworkers=nworkers, length=max_frames)
     loader = trainloader if viz_train else valloader
     nusc_maps = get_nusc_maps(map_folder)
 
@@ -662,6 +662,7 @@ def sim_model_preds(version,
                 counter += 1
 
             if (counter > max_frames and max_frames > 0):
+                print("BROKEN")
                 break
     
     if video_output:

@@ -353,7 +353,10 @@ class SimData(torch.utils.data.Dataset):
 
         
         self.ixes = self.prepro()
+<<<<<<< HEAD
         self.length = len(self.ixes)
+=======
+>>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
 
         dx, bx, nx = gen_dx_bx(grid_conf['xbound'], grid_conf['ybound'], grid_conf['zbound'])
         self.dx, self.bx, self.nx = dx.numpy(), bx.numpy(), nx.numpy()
@@ -458,12 +461,23 @@ class SimData(torch.utils.data.Dataset):
         cameras = {}
         for cam in range(1,7):
             # print(cam)
+<<<<<<< HEAD
             path = "/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM/" + str(cam) + "/*.jpeg"
             files = glob(path)
             cameras[cam] = files
         bev_files = glob("/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM/BEV/*.jpeg")
         cameras['BEV'] = bev_files
 
+=======
+            path = self.folder + '/' + str(cam) + "/*.jpeg"
+            files = glob(path)
+            cameras[cam] = files
+        bev_files = glob(self.folder + "/BEV/*.png")
+        cameras['BEV'] = bev_files
+
+        print(cameras['BEV'])
+
+>>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
         cam_index = {
             6 : 'CAM_FRONT_LEFT',
             1 : 'CAM_FRONT',
@@ -474,7 +488,11 @@ class SimData(torch.utils.data.Dataset):
         }
 
         ls = []
+<<<<<<< HEAD
         for i in range(311):
+=======
+        for i in range(15):
+>>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
             dct = {}
             dct['Frame'] = i
             data = {}
@@ -527,8 +545,12 @@ class SimData(torch.utils.data.Dataset):
             # i = str(self.cam_id[cam]+1)
             # imgname = os.path.join(self.folder, i+'/CAM'+i+'_000040.jpeg')
             imgname = rec['data'][cam]
+<<<<<<< HEAD
             print(imgname)
             img = Image.open(imgname)
+=======
+            img = Image.open(imgname)#.convert('RGB')
+>>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
             post_rot = torch.eye(2)
             post_tran = torch.zeros(2)
 
@@ -576,6 +598,7 @@ class SimData(torch.utils.data.Dataset):
         imgname = rec['data']['BEV']
         # print(imgname)
         img = Image.open(imgname)
+        img = img.rotate(180)
 
         
         newsize = (self.nx[0], self.nx[1])
@@ -584,14 +607,15 @@ class SimData(torch.utils.data.Dataset):
 
         #vehicle label
         img_vehicle = np.zeros((self.nx[0], self.nx[1]))
-        img_vehicle = (img[:,:,0] > 200) * (img[:,:,1] > 200) * (img[:,:,2] < 200) 
+        img_vehicle = (img[:,:,0] < 200) * (img[:,:,1] > 200) * (img[:,:,2] < 200) 
         
         #road_segment
         img_road_segment = np.zeros((self.nx[0], self.nx[1]))
         img_road_segment = (img[:,:,0] > 200)
 
-        #lane divider
+        #pedestrians
         img_lane_divider = np.zeros((self.nx[0], self.nx[1]))
+        img_road_segment = (img[:,:,2] > 200)
 
         return torch.Tensor(np.stack([img_vehicle,img_road_segment,img_lane_divider]))
 
@@ -608,7 +632,7 @@ class SimData(torch.utils.data.Dataset):
                    Augmentation Conf: {self.data_aug_conf}"""
 
     def __len__(self):
-        return self.length
+        return len(self.ixes)
 
 
 class SimSegmentationData(SimData): #torch.utils.data.Dataset
@@ -619,6 +643,10 @@ class SimSegmentationData(SimData): #torch.utils.data.Dataset
     def __getitem__(self, index):
         rec = self.ixes[index]
         cams = self.choose_cams()
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
         imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(rec, cams)
         #binimg = self.get_binimg(rec)
         binmap = self.get_binmap(rec)
@@ -627,7 +655,7 @@ class SimSegmentationData(SimData): #torch.utils.data.Dataset
 
 
 def compile_sim_data(version, dataroot, data_aug_conf, grid_conf, bsz,
-                 nworkers, map_folder=''):
+                 nworkers, map_folder='', length=1):
     folder = dataroot
 
     maps = None
