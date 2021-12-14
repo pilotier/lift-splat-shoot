@@ -1,3 +1,6 @@
+#  File "/home/navya/anaconda3/lib/python3.9/site-packages/efficientnet_pytorch/utils.py", line 271, in forward
+#    x = F.conv2d(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+#RuntimeError: Expected 4-dimensional input for 4-dimensional weight [32, 3, 3, 3], but got 5-dimensional input of size [4, 1, 3, 130, 354] instead
 # Lift, Splat, Shoot: Encoding Images From Arbitrary Camera Rigs by Implicitly Unprojecting to 3D
 
 PyTorch code for Lift-Splat-Shoot (ECCV 2020).
