@@ -118,7 +118,17 @@ def get_rot(h):
         [-np.sin(h), np.cos(h)],
     ])
 
+def img_transform_depth(img,resize, resize_dims, crop,
+                  flip, rotate):
+    # adjust image
+    img = img.resize(resize_dims)
+    img = img.crop(crop)
+    if flip:
+        img = img.transpose(method=Image.FLIP_LEFT_RIGHT)
+    img = img.rotate(rotate)
 
+    return img
+    
 def img_transform(img, post_rot, post_tran,
                   resize, resize_dims, crop,
                   flip, rotate):

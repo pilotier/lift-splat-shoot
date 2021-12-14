@@ -11,7 +11,7 @@ import numpy as np
 import os
 
 from .models import compile_model, compile_depth_model
-from .data import compile_sim_data
+# from .data import compile_sim_data
 from .depth_data import compile_depth_data
 from .tools import SimpleLoss, get_batch_iou, get_val_info
 
@@ -242,7 +242,7 @@ def multi_train(version,
                 model.train()
                 break
 
-'''
+
 
 def sim_train(version,
             modelf=None,
@@ -360,11 +360,11 @@ def sim_train(version,
                 torch.save(model.state_dict(), mname)
                 model.train()
                 break
-
+'''
 
 def sim_lss_depth(version,
             modelf=None,
-            dataroot='/data/nuscenes',
+            dataroot='/Sim_data',
             nepochs=10, #10000
             gpuid=0,
 
@@ -377,7 +377,7 @@ def sim_lss_depth(version,
             ncams=1, # 5
             max_grad_norm=5.0,
             pos_weight=2.13,
-            logdir='./runs',
+            log_dir='./runs',
 
             xbound=[-50.0, 50.0, 0.5],
             ybound=[-50.0, 50.0, 0.5],
@@ -425,19 +425,19 @@ def sim_lss_depth(version,
     else:
         loss_fn = SimpleLoss(pos_weight).cuda(gpuid)
 
-    writer = SummaryWriter(logdir=logdir)
-    val_step = 1000 if version == 'mini' else 10000
+    # writer = SummaryWriter(logdir=log_dir)
+    val_step = 10 #if version == 'mini' else 10000
 
     model.train()
     counter = 0
     for epoch in range(nepochs):
         np.random.seed()
-        for batchi, (imgs, binimgs) in enumerate(trainloader):
+        for batchi, (imgs, depthimgs) in enumerate(trainloader):
             t0 = time()
             opt.zero_grad()
             preds = model(imgs.to(device))
-            binimgs = binimgs.to(device)
-            loss = loss_fn(preds, binimgs)
+            depthimgs = depthimgs.to(device)
+            loss = loss_fn(preds, depthimgs)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
             opt.step()
@@ -446,23 +446,23 @@ def sim_lss_depth(version,
 
             if counter % 10 == 0:
                 print(counter, loss.item())
-                writer.add_scalar('train/loss', loss, counter)
+                # writer.add_scalar('train/loss', loss, counter)
 
             if counter % 50 == 0:
-                _, _, iou = get_batch_iou(preds, binimgs)
-                writer.add_scalar('train/iou', iou, counter)
-                writer.add_scalar('train/epoch', epoch, counter)
-                writer.add_scalar('train/step_time', t1 - t0, counter)
+                _, _, iou = get_batch_iou(preds, depthimgs)
+                # writer.add_scalar('train/iou', iou, counter)
+                # writer.add_scalar('train/epoch', epoch, counter)
+                # writer.add_scalar('train/step_time', t1 - t0, counter)
 
             if counter % val_step == 0:
                 val_info = get_val_info(model, valloader, loss_fn, device)
                 print('VAL', val_info)
-                writer.add_scalar('val/loss', val_info['loss'], counter)
-                writer.add_scalar('val/iou', val_info['iou'], counter)
+                # writer.add_scalar('val/loss', val_info['loss'], counter)
+                # writer.add_scalar('val/iou', val_info['iou'], counter)
 
             if counter % val_step == 0:
                 model.eval()
-                mname = os.path.join(logdir, "model{}.pt".format(counter))
+                mname = os.path.join(log_dir, "model{}.pt".format(counter))
                 if output_folder is not None:
                     mname = os.path.join(output_folder, "model{}.pt".format(counter))
                     torch.save(model.state_dict(), mname)

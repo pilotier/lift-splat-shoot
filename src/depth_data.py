@@ -2,11 +2,8 @@ import torch
 import os
 import numpy as np
 from PIL import Image
-import cv2
 
-from glob import glob
-
-from .tools import get_lidar_data, img_transform, normalize_img, gen_dx_bx, get_nusc_maps, get_local_map
+from .tools import img_transform, normalize_img, gen_dx_bx, img_transform_depth
 
 
 class SimData(torch.utils.data.Dataset):
@@ -26,12 +23,16 @@ class SimData(torch.utils.data.Dataset):
         self.dx, self.bx, self.nx = dx.numpy(), bx.numpy(), nx.numpy()
 
     def prepro(self):
+        rgb_l = os.listdir(os.path.join(self.folder,'RGB','L'))
+        rgb_r = os.listdir(os.path.join(self.folder,'RGB','R'))
+        depth_l = os.listdir(os.path.join(self.folder,'DEPTH','L'))
+        depth_r = os.listdir(os.path.join(self.folder,'DEPTH','R'))
 
-        return [{'rgb': {'L': os.path.join(self.folder,'RGB','L',str(i),'.jpeg'), \
-            'R' : os.path.join(self.folder,'RGB','R',str(i),'.jpeg') }, \
-            'depth': {'L': os.path.join(self.folder,'DEPTH','L',str(i),'.jpeg'), \
-            'R': os.path.join(self.folder,'DEPTH','R',str(i),'.jpeg') } \
-            } for i in range(160)]
+        return [{'rgb': {'L': os.path.join(self.folder,'RGB','L',rgb_l[i]), \
+            'R' : os.path.join(self.folder,'RGB','R',rgb_r[i]) }, \
+            'depth': {'L': os.path.join(self.folder,'DEPTH','L',depth_l[i]), \
+            'R': os.path.join(self.folder,'DEPTH','R',depth_r[i]) } \
+            } for i in range(len(rgb_l))]
 
 
     def sample_augmentation(self):
@@ -65,7 +66,7 @@ class SimData(torch.utils.data.Dataset):
             imgname = rec['rgb'][cam]
             img = Image.open(imgname)
             resize, resize_dims, crop, flip, rotate = self.sample_augmentation()
-            img, _, _ = img_transform(img, resize=resize,resize_dims=resize_dims,crop=crop,flip=flip,rotate=rotate)
+            img = img_transform_depth(img, resize=resize,resize_dims=resize_dims,crop=crop,flip=flip,rotate=rotate)
             imgs.append(normalize_img(img))
 
         return torch.stack(imgs)
@@ -76,7 +77,7 @@ class SimData(torch.utils.data.Dataset):
             depthname = rec['depth'][cam]
             depth = Image.open(depthname)
             resize, resize_dims, crop, flip, rotate = self.sample_augmentation()
-            depth, _, _ = img_transform(depth, resize=resize,resize_dims=resize_dims,crop=crop,flip=flip,rotate=rotate)
+            depth = img_transform_depth(depth, resize=resize,resize_dims=resize_dims,crop=crop,flip=flip,rotate=rotate)
             depths.append(normalize_img(depth))
 
         return torch.stack(depths)
@@ -115,7 +116,7 @@ class DepthData(SimData): #torch.utils.data.Dataset
 
 
 
-def compile_depth_data(dataroot, data_aug_conf, grid_conf, bsz, nworkers):
+def compile_depth_data(version,dataroot,data_aug_conf, grid_conf, bsz, nworkers):
     folder = dataroot
     traindata = DepthData(folder, is_train=True, data_aug_conf=data_aug_conf,
                          grid_conf=grid_conf)
@@ -126,7 +127,7 @@ def compile_depth_data(dataroot, data_aug_conf, grid_conf, bsz, nworkers):
                                               shuffle=True,
                                               num_workers=nworkers,
                                               drop_last=True,
-                                              worker_init_fn=worker_rnd_init)
+                                              worker_init_fn=None)
     valloader = torch.utils.data.DataLoader(valdata, batch_size=bsz,
                                             shuffle=False,
                                             num_workers=nworkers)

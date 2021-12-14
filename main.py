@@ -20,7 +20,7 @@ if __name__ == '__main__':
         # 'viz_model_preds': src.explore.viz_model_preds,
         # 'multi_viz_model_preds': src.explore.multi_viz_model_preds,
 
-        'sim_model_preds': src.explore.sim_model_preds,
-        'sim_train': src.train.sim_train,
+        # 'sim_model_preds': src.explore.sim_model_preds,
+        # 'sim_train': src.train.sim_train,
         'sim_depth_train' : src.train.sim_lss_depth
     })
