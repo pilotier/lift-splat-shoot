@@ -258,3 +258,43 @@ class LiftSplatShoot(nn.Module):
 
 def compile_model(grid_conf, data_aug_conf, outC):
     return LiftSplatShoot(grid_conf, data_aug_conf, outC)
+
+class DepthEncode(nn.Module):
+    def __init__(self, grid_conf, data_aug_conf):
+        super(DepthEncode, self).__init__()
+        self.grid_conf = grid_conf
+        self.data_aug_conf = data_aug_conf
+
+        dx, bx, nx = gen_dx_bx(self.grid_conf['xbound'],
+                                              self.grid_conf['ybound'],
+                                              self.grid_conf['zbound'],
+                                              )
+        self.dx = nn.Parameter(dx, requires_grad=False)
+        self.bx = nn.Parameter(bx, requires_grad=False)
+        self.nx = nn.Parameter(nx, requires_grad=False)
+
+        self.downsample = 16
+        self.camC = 64
+        self.frustum = self.create_frustum()
+        self.D, _, _, _ = self.frustum.shape
+        self.camencode = CamEncode(self.D, self.camC, self.downsample)
+
+    def create_frustum(self):
+        # make grid in image plane
+        ogfH, ogfW = self.data_aug_conf['final_dim']
+        fH, fW = ogfH // self.downsample, ogfW // self.downsample
+        ds = torch.arange(*self.grid_conf['dbound'], dtype=torch.float).view(-1, 1, 1).expand(-1, fH, fW)
+        D, _, _ = ds.shape
+        xs = torch.linspace(0, ogfW - 1, fW, dtype=torch.float).view(1, 1, fW).expand(D, fH, fW)
+        ys = torch.linspace(0, ogfH - 1, fH, dtype=torch.float).view(1, fH, 1).expand(D, fH, fW)
+
+        # D x H x W x 3
+        frustum = torch.stack((xs, ys, ds), -1)
+        return nn.Parameter(frustum, requires_grad=False)
+
+    def forward(self,x):
+        x = self.camencode(x)
+        return x
+
+def compile_depth_model(grid_conf, data_aug_conf):
+    return DepthEncode(grid_conf, data_aug_conf)

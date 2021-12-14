@@ -15,13 +15,13 @@ from torchvision.utils import save_image
 
 import os
 
-from .data import compile_data, compile_sim_data
+from .data import compile_sim_data
 from .tools import (ego_to_cam, get_only_in_img_mask, denormalize_img,
                     SimpleLoss, get_val_info, add_ego, gen_dx_bx,
                     get_nusc_maps, plot_nusc_map, generate_video_from_imgs)
 from .models import compile_model
 
-
+'''
 def lidar_check(version,
                 dataroot='/dataset/nuscenes',
                 show_lidar=True,
@@ -521,12 +521,12 @@ def multi_viz_model_preds(version,
     if video_output:
         generate_video_from_imgs('output', '.jpg')
 
-
+'''
 # 0 = img_vehicle, 1 = img_road_segment, 2 = img_lane_divider
 def sim_model_preds(version,
                     modelf,
-                    dataroot='/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM',
-                    map_folder='/home/tanushri/Documents/Datasets/nuscenes/v1.0-test/',
+                    dataroot='/home/navya/data/Sim_lss/LSSCAM',
+                    map_folder='',
                     gpuid=0,
                     viz_train=False,
                     video_output=True,
@@ -569,7 +569,7 @@ def sim_model_preds(version,
     trainloader, valloader = compile_sim_data(version, dataroot, data_aug_conf=data_aug_conf,
                                           grid_conf=grid_conf, bsz=bsz, nworkers=nworkers, length=max_frames)
     loader = trainloader if viz_train else valloader
-    nusc_maps = get_nusc_maps(map_folder)
+    # nusc_maps = get_nusc_maps(map_folder)
 
     device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
 

@@ -11,15 +11,16 @@ import src
 
 if __name__ == '__main__':
     Fire({
-        'lidar_check': src.explore.lidar_check,
-        'cumsum_check': src.explore.cumsum_check,
+        # 'lidar_check': src.explore.lidar_check,
+        # 'cumsum_check': src.explore.cumsum_check,
 
-        'train': src.train.train,
-        'multi_train': src.train.multi_train,
-        'eval_model_iou': src.explore.eval_model_iou,
-        'viz_model_preds': src.explore.viz_model_preds,
-        'multi_viz_model_preds': src.explore.multi_viz_model_preds,
+        # 'train': src.train.train,
+        # 'multi_train': src.train.multi_train,
+        # 'eval_model_iou': src.explore.eval_model_iou,
+        # 'viz_model_preds': src.explore.viz_model_preds,
+        # 'multi_viz_model_preds': src.explore.multi_viz_model_preds,
 
         'sim_model_preds': src.explore.sim_model_preds,
         'sim_train': src.train.sim_train,
+        'sim_depth_train' : src.train.sim_lss_depth
     })
