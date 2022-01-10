@@ -353,10 +353,8 @@ class SimData(torch.utils.data.Dataset):
 
         
         self.ixes = self.prepro()
-<<<<<<< HEAD
+
         self.length = len(self.ixes)
-=======
->>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
 
         dx, bx, nx = gen_dx_bx(grid_conf['xbound'], grid_conf['ybound'], grid_conf['zbound'])
         self.dx, self.bx, self.nx = dx.numpy(), bx.numpy(), nx.numpy()
@@ -461,23 +459,20 @@ class SimData(torch.utils.data.Dataset):
         cameras = {}
         for cam in range(1,7):
             # print(cam)
-<<<<<<< HEAD
             path = "/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM/" + str(cam) + "/*.jpeg"
             files = glob(path)
             cameras[cam] = files
         bev_files = glob("/home/tanushri/Work/lift-splat-shoot/LSS_TEST2/LSSCAM/BEV/*.jpeg")
         cameras['BEV'] = bev_files
 
-=======
-            path = self.folder + '/' + str(cam) + "/*.jpeg"
-            files = glob(path)
-            cameras[cam] = files
+        path = self.folder + '/' + str(cam) + "/*.jpeg"
+        files = glob(path)
+        cameras[cam] = files
         bev_files = glob(self.folder + "/BEV/*.png")
         cameras['BEV'] = bev_files
 
         print(cameras['BEV'])
 
->>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
         cam_index = {
             6 : 'CAM_FRONT_LEFT',
             1 : 'CAM_FRONT',
@@ -488,11 +483,8 @@ class SimData(torch.utils.data.Dataset):
         }
 
         ls = []
-<<<<<<< HEAD
-        for i in range(311):
-=======
+
         for i in range(15):
->>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
             dct = {}
             dct['Frame'] = i
             data = {}
@@ -545,12 +537,7 @@ class SimData(torch.utils.data.Dataset):
             # i = str(self.cam_id[cam]+1)
             # imgname = os.path.join(self.folder, i+'/CAM'+i+'_000040.jpeg')
             imgname = rec['data'][cam]
-<<<<<<< HEAD
-            print(imgname)
-            img = Image.open(imgname)
-=======
             img = Image.open(imgname)#.convert('RGB')
->>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
             post_rot = torch.eye(2)
             post_tran = torch.zeros(2)
 
@@ -643,10 +630,6 @@ class SimSegmentationData(SimData): #torch.utils.data.Dataset
     def __getitem__(self, index):
         rec = self.ixes[index]
         cams = self.choose_cams()
-<<<<<<< HEAD
-=======
-        
->>>>>>> 51cf2c0a1849538467853557f1eb58641ee15710
         imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(rec, cams)
         #binimg = self.get_binimg(rec)
         binmap = self.get_binmap(rec)
